@@ -4,7 +4,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'dart:developer' as d;
 
-
 Future<void> main() async {
   await GetStorage.init();
   runApp(const MyApp());
@@ -17,6 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '卍',
+
       ///Giao diện tối.
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.system,
@@ -37,7 +37,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   /// Tính số lần niệm Phật
   int _counter = 0;
   int _a_di_da_phat = 0;
@@ -77,40 +76,56 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
-  _start(){
-    if(_lastWords != ""){
-      int count = ((_lastWords.length - _lastWords.replaceAll("A Di Đà", "").length)/("A Di Đà".length)).round();
-      _incrementCounter(count);
-      _lastWords = "";
-    }
-      _startListening();
-
-  }
-
   void _startListening() async {
+    isGetVoice = false;
     await _speechToText.listen(
-        cancelOnError: false,
-        listenMode: ListenMode.confirmation,
+        // cancelOnError: false,
+        // listenMode: ListenMode.confirmation,
         // listenFor: const Duration(minutes:  10),
-        pauseFor: const Duration(seconds:  10),
+        // pauseFor: const Duration(seconds: 10),
         // partialResults: true,
         localeId: 'vi',
         onResult: (val) => setState(() {
-              _lastWords = val.recognizedWords;
               check(val.recognizedWords);
             }));
-    setState(() {
-
-    });
+    setState(() {});
   }
 
-  check( String word){
-    if(_speechToText.isNotListening){
-      int count = ((word.length - word.replaceAll("A Di Đà", "").length)/("A Di Đà".length)).round();
-      _incrementCounter(count);
-      _lastWords = "";
+  final VOICE = "VOICE";
+
+  check(String word) {
+    if (_speechToText.isNotListening && !isGetVoice) {
       _startListening();
     }
+    countVoice(word);
+  }
+
+  bool isGetVoice = false;
+  getVoice() {
+    isGetVoice = true;
+    if (_speechToText.isListening) {
+      _stopListening();
+    } else {
+      countVoice("");
+    }
+  }
+
+  countVoice(String word) {
+    if (_lastWords.length > word.length || isGetVoice) {
+      // d.log("word:  ${_lastWords.length}");
+      int count =
+          ((_lastWords.length - _lastWords.replaceAll("A Di Đà", "").length) /
+                  ("A Di Đà".length))
+              .round();
+      _incrementCounter(count);
+      // d.log("word2:  ${_lastWords.replaceAll("A Di Đà", "").length}");
+      d.log("count + ${count}");
+      // _lastWords = "";
+
+    }
+    _lastWords = isGetVoice ? "" : word;
+
+    storage.write(VOICE, _lastWords);
 
     // d.log("isNotListening: " + _speechToText.isNotListening.toString());
     // d.log("isAvailable: " + _speechToText.isAvailable.toString());
@@ -132,6 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _initSpeech();
     _a_di_da_phat = storage.read(ADIDAPHAT) ?? 0;
     _counter = storage.read(COUNT) ?? 0;
+    _lastWords = storage.read(VOICE) ?? "";
   }
 
   final myController = TextEditingController();
@@ -154,7 +170,8 @@ class _MyHomePageState extends State<MyHomePage> {
             onTap: () {
               HapticFeedback.mediumImpact();
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text("Nếu niệm Phật không có tác dụng thì niệm: NA TA SE RA"),
+                content: Text(
+                    "Nếu niệm Phật không có tác dụng thì niệm: NA TA SE RA"),
               ));
             },
             child: const Icon(
@@ -247,17 +264,27 @@ class _MyHomePageState extends State<MyHomePage> {
               const Text(
                 'Nam Mô A Di Đà Phật',
               ),
-              Text(
-                // If listening is active show the recognized words
-                _speechToText.isListening
-                    ? '$_lastWords'
-                // If listening isn't active but could be tell the user
-                // how to start it, otherwise indicate that speech
-                // recognition is not yet ready or not supported on
-                // the target device
-                    : _speechEnabled
-                    ? ''
-                    : 'Speech not available',
+              GestureDetector(
+                onTap: () {
+                  // Clipboard.setData(ClipboardData(text: "${((_lastWords.length - _lastWords.replaceAll("A Di Đà", "").length) / ("A Di Đà".length)).round()}"));
+                  // HapticFeedback.mediumImpact();
+                  // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  //   content: Text("Copied: ${((_lastWords.length - _lastWords.replaceAll("A Di Đà", "").length) / ("A Di Đà".length)).round()} "),
+                  // ));
+                  getVoice();
+                },
+                child: Text(
+                  // If listening is active show the recognized words
+                  _speechToText.isListening
+                      ? '(${((_lastWords.length - _lastWords.replaceAll("A Di Đà", "").length) / ("A Di Đà".length)).round()}) $_lastWords'
+                      // If listening isn't active but could be tell the user
+                      // how to start it, otherwise indicate that speech
+                      // recognition is not yet ready or not supported on
+                      // the target device
+                      : _speechEnabled
+                          ? ''
+                          : 'Speech not available',
+                ),
               ),
             ],
           ),
@@ -389,7 +416,7 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed:
             // If not yet listening for speech start, otherwise stop
-        _speechToText.isNotListening ? _start : _stopListening,
+            _speechToText.isNotListening ? _startListening : _stopListening,
         tooltip: 'Listen',
         child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
       ),
@@ -397,7 +424,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
 
 ///Giao diện các nút bầm +/-1 +/-5 +/-10
 
@@ -548,4 +574,5 @@ class OutlinedCardExample2 extends StatelessWidget {
     );
   }
 }
+
 ///
