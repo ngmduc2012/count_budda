@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'dart:developer' as d;
+
 
 Future<void> main() async {
   await GetStorage.init();
@@ -10,21 +13,14 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '卍',
+      ///Giao diện tối.
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.system,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.orange,
       ),
       home: const MyHomePage(title: '卍 A Di Đà Phật'),
@@ -34,16 +30,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -51,11 +37,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  /// Tính số lần niệm Phật
   int _counter = 0;
   int _a_di_da_phat = 0;
 
   void _incrementCounter(int number) {
-    if(number > 0){
+    if (number > 0) {
       HapticFeedback.mediumImpact();
     }
     setState(() {
@@ -67,53 +55,117 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   final storage = GetStorage();
-  final  ADIDAPHAT = "ADIDAPHAT";
+  final ADIDAPHAT = "ADIDAPHAT";
   final COUNT = "COUNT";
+
   Future<void> _saveData() async {
     setState(() {
-    _a_di_da_phat+= _counter;
-    storage.write(ADIDAPHAT, _a_di_da_phat);
-    _counter = 0;
+      _a_di_da_phat += _counter;
+      storage.write(ADIDAPHAT, _a_di_da_phat);
+      _counter = 0;
+      storage.write(COUNT, _counter);
     });
   }
 
+  /// Nhận diện giọng nói - Nam Mô A Di Đà Phật
+  SpeechToText _speechToText = SpeechToText();
+  bool _speechEnabled = false;
+  String _lastWords = '';
+
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  void _startListening() async {
+    await _speechToText.listen(
+        cancelOnError: false,
+        listenMode: ListenMode.confirmation,
+        // listenFor: const Duration(minutes:  10),
+        pauseFor: const Duration(seconds:  10),
+        // partialResults: true,
+        localeId: 'vi',
+        onResult: (val) => setState(() {
+              _lastWords = val.recognizedWords;
+              check(val.recognizedWords);
+            }));
+    setState(() {
+
+    });
+  }
+
+  check( String word){
+    if(_speechToText.isNotListening){
+      if(word.contains("A Di Đà")){
+        _incrementCounter(1);
+      }
+      _startListening();
+    }
+
+    // d.log("isNotListening: " + _speechToText.isNotListening.toString());
+    // d.log("isAvailable: " + _speechToText.isAvailable.toString());
+    // d.log("isListening: " + _speechToText.isListening.toString());
+    // d.log("hasRecognized: " + _speechToText.hasRecognized.toString());
+    // d.log("lastStatus: " +  _speechToText.lastStatus.toString());
+    // d.log("=====================");
+  }
+
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {});
+  }
+
+  /// Init
 
   @override
   void initState() {
-    _a_di_da_phat = storage.read(ADIDAPHAT)??0;
-    _counter = storage.read(COUNT)??0;
+    _initSpeech();
+    _a_di_da_phat = storage.read(ADIDAPHAT) ?? 0;
+    _counter = storage.read(COUNT) ?? 0;
   }
 
   final myController = TextEditingController();
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
     myController.dispose();
     super.dispose();
   }
 
+  /// Giao diện
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
           GestureDetector(
             onTap: () {
+              HapticFeedback.mediumImpact();
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text("Nếu niệm Phật không có tác dụng thì niệm: NA TA SE RA"),
+              ));
+            },
+            child: const Icon(
+              Icons.lock,
+              color: Colors.red,
+            ),
+          ),
+          const SizedBox(
+            width: 18,
+          ),
+          GestureDetector(
+            onTap: () {
               myController.clear();
               _saveData();
             },
-            child: Icon(Icons.verified, color: Colors.green,),
+            child: const Icon(
+              Icons.verified,
+              color: Colors.green,
+            ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 24,
           )
         ],
@@ -127,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
         shrinkWrap: true,
         children: [
           SizedBox(
-            height: 108,
+            height: 72,
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -151,7 +203,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Column(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
+                      children: const [
                         SizedBox(
                           height: 12,
                         ),
@@ -183,11 +235,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               const Text(
-                'Nam Mô a Di Đà Phật',
+                'Nam Mô A Di Đà Phật',
+              ),
+              Text(
+                // If listening is active show the recognized words
+                _speechToText.isListening
+                    ? '$_lastWords'
+                // If listening isn't active but could be tell the user
+                // how to start it, otherwise indicate that speech
+                // recognition is not yet ready or not supported on
+                // the target device
+                    : _speechEnabled
+                    ? ''
+                    : 'Speech not available',
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 72,
           ),
           Row(
@@ -229,20 +293,20 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 4,
               ),
               Flexible(
                 child: TextField(
                   controller: myController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Enter a number',
                   ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 4,
               ),
               ClipRRect(
@@ -267,12 +331,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       onPressed: () {
                         _incrementCounter(int.parse(myController.value.text));
                       },
-                      child: Text("+"),
+                      child: const Text("+"),
                     ),
                   ],
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 4,
               ),
               ClipRRect(
@@ -309,13 +373,23 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           SizedBox(
             height: 108,
-          )
+          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed:
+            // If not yet listening for speech start, otherwise stop
+        _speechToText.isNotListening ? _startListening : _stopListening,
+        tooltip: 'Listen',
+        child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
       ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
+
+
+///Giao diện các nút bầm +/-1 +/-5 +/-10
 
 class ElevatedCardExample extends StatelessWidget {
   const ElevatedCardExample({Key? key}) : super(key: key);
@@ -464,3 +538,4 @@ class OutlinedCardExample2 extends StatelessWidget {
     );
   }
 }
+///
