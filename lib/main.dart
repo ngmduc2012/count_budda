@@ -77,6 +77,16 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  _start(){
+    if(_lastWords != ""){
+      int count = ((_lastWords.length - _lastWords.replaceAll("A Di Đà", "").length)/("A Di Đà".length)).round();
+      _incrementCounter(count);
+      _lastWords = "";
+    }
+      _startListening();
+
+  }
+
   void _startListening() async {
     await _speechToText.listen(
         cancelOnError: false,
@@ -96,9 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   check( String word){
     if(_speechToText.isNotListening){
-      if(word.contains("A Di Đà")){
-        _incrementCounter(1);
-      }
+      int count = ((word.length - word.replaceAll("A Di Đà", "").length)/("A Di Đà".length)).round();
+      _incrementCounter(count);
+      _lastWords = "";
       _startListening();
     }
 
@@ -379,7 +389,7 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed:
             // If not yet listening for speech start, otherwise stop
-        _speechToText.isNotListening ? _startListening : _stopListening,
+        _speechToText.isNotListening ? _start : _stopListening,
         tooltip: 'Listen',
         child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
       ),
