@@ -77,7 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startListening() async {
-    isGetVoice = false;
     await _speechToText.listen(
         // cancelOnError: false,
         // listenMode: ListenMode.confirmation,
@@ -94,15 +93,13 @@ class _MyHomePageState extends State<MyHomePage> {
   final VOICE = "VOICE";
 
   check(String word) {
-    if (_speechToText.isNotListening && !isGetVoice) {
+    if (_speechToText.isNotListening) {
       _startListening();
     }
     countVoice(word);
   }
 
-  bool isGetVoice = false;
   getVoice() {
-    isGetVoice = true;
     if (_speechToText.isListening) {
       _stopListening();
     } else {
@@ -111,7 +108,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   countVoice(String word) {
-    if (_lastWords.length > word.length || isGetVoice) {
+    // Điều kiện 1 để đảm bảo chỉ cộng thêm lần đầu nói.
+    // Điều kiện 2 để tránh hệ thống sửa từ gây thỏa mãn điều kiện 1.
+    // VD: sử A Di Đà Phật thành nhạc Phật gây thỏa mãn điều kiện 1 khi chưa đang nói, lúc í hệ thống sẽ
+    // cộng thêm từ không đúng trường hợp.
+    if (_lastWords.length > word.length  && "A Di Đà".length > word.length) {
       // d.log("word:  ${_lastWords.length}");
       int count =
           ((_lastWords.length - _lastWords.replaceAll("A Di Đà", "").length) /
@@ -123,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // _lastWords = "";
 
     }
-    _lastWords = isGetVoice ? "" : word;
+    _lastWords =  word;
 
     storage.write(VOICE, _lastWords);
 
