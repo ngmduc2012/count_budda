@@ -63,6 +63,21 @@ class MenuDrawer extends GetView<HomeController> {
           const SizedBox(
             height: 20,
           ),
+
+          ListTile(
+            leading: const Icon(
+              Icons.currency_bitcoin,
+              color: AppColors.color,
+              size: 36,
+            ),
+            title: const Text("Future", style: styleMenu),
+            onTap: () async {
+              Get.offAndToNamed(Routes.FUTURE);
+            },
+          ),
+          const SizedBox(
+            height: 20,
+          ),
           ListTile(
             leading: const Icon(
               Icons.settings,

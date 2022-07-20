@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:nam_mo_a_di_da_phat/app/module/home/widgets/buttons.dart';
 
 import '../../../core/values/text_style.dart';
-import '../../../routes/routes.dart';
 import '../../widgets/menu_drawer.dart';
 import 'controller.dart';
 
@@ -36,7 +35,7 @@ class HomeScreen extends GetView<HomeController> {
                   GestureDetector(
                     onTap: () {
                       HapticFeedback.mediumImpact();
-                      controller.messangerKey.currentState!
+                      ScaffoldMessenger.of(context)
                           .showSnackBar(const SnackBar(
                         content: Text(
                             "Nếu niệm Phật không có tác dụng thì niệm: NA TA SE RA"),
@@ -75,7 +74,7 @@ class HomeScreen extends GetView<HomeController> {
                     //   //     parent: AlwaysScrollableScrollPhysics()),
                     //   child:
                     Padding(
-                  padding: const EdgeInsets.fromLTRB(13, 0, 13, 0),
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                   child: ListView(
                     controller: controller.scrollControllerHome,
                     physics: const BouncingScrollPhysics(
@@ -98,7 +97,7 @@ class HomeScreen extends GetView<HomeController> {
                               Clipboard.setData(
                                   ClipboardData(text: "${controller.counter}"));
                               HapticFeedback.mediumImpact();
-                              controller.messangerKey.currentState!
+                              ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
                                 content: Text("Copied: ${controller.counter}"),
                               ));
@@ -132,7 +131,7 @@ class HomeScreen extends GetView<HomeController> {
                               Clipboard.setData(ClipboardData(
                                   text: "${controller.a_di_da_phat}"));
                               HapticFeedback.mediumImpact();
-                              controller.messangerKey.currentState!
+                              ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
                                 content: Text("Copied: ${controller.a_di_da_phat} "),
                               ));
@@ -181,11 +180,23 @@ class HomeScreen extends GetView<HomeController> {
                         children: [
                           GestureDetector(
                             onTap: () => controller.incrementCounter(1),
-                            child:  ElevatedCardExample(),
+                            child:  ElevatedCard(
+                              width: context.width*0.7,
+                              height: context.height*0.1,
+                              color: Colors.red,
+                              text: "1",
+                              colorText: Colors.white,
+                            ),
                           ),
                           GestureDetector(
                             onTap: () => controller.incrementCounter(-1),
-                            child:  ElevatedCardExample2(),
+                            child:  ElevatedCard(
+                              width: context.width*0.2,
+                              height: context.height*0.1,
+                              color: Colors.red,
+                              text: "-1",
+                              colorText: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -193,11 +204,23 @@ class HomeScreen extends GetView<HomeController> {
                         children: [
                           GestureDetector(
                             onTap: () => controller.incrementCounter(5),
-                            child:  FilledCardExample(),
+                            child:  ElevatedCard(
+                              width: context.width*0.7,
+                              height: context.height*0.1,
+                              color: Colors.yellow,
+                              text: "+5",
+                              colorText: Colors.black,
+                            ),
                           ),
                           GestureDetector(
                             onTap: () => controller.incrementCounter(-5),
-                            child:  FilledCardExample2(),
+                            child:  ElevatedCard(
+                              width: context.width*0.2,
+                              height: context.height*0.1,
+                              color: Colors.yellow,
+                              text: "-5",
+                              colorText: Colors.black,
+                            ),
                           ),
                         ],
                       ),
@@ -205,11 +228,23 @@ class HomeScreen extends GetView<HomeController> {
                         children: [
                           GestureDetector(
                             onTap: () => controller.incrementCounter(10),
-                            child: OutlinedCardExample(),
+                            child: ElevatedCard(
+                              width: context.width*0.7,
+                              height: context.height*0.1,
+                              color: Colors.green,
+                              text: "+10",
+                              colorText: Colors.white,
+                            ),
                           ),
                           GestureDetector(
                             onTap: () => controller.incrementCounter(-10),
-                            child: OutlinedCardExample2(),
+                            child: ElevatedCard(
+                              width: context.width*0.2,
+                              height: context.height*0.1,
+                              color: Colors.green,
+                              text: "-10",
+                              colorText: Colors.white,
+                            ),
                           )
                         ],
                       ),

@@ -89,12 +89,12 @@ class CustomTextInput2 extends StatelessWidget {
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(20),
               ),
-              errorStyle: TextStyle(
+              errorStyle: const TextStyle(
                 color: Colors.red,
                 fontSize: 14,
               ),
               hintText: _.hintText,
-              hintStyle: TextStyle(
+              hintStyle: const TextStyle(
                 color: Colors.black45,
                 fontWeight: FontWeight.w400,
               ),

@@ -25,7 +25,6 @@ class HomeController extends FullLifeCycleController {
     keepScrollOffset: true,
   );
 
-  final messangerKey = GlobalKey<ScaffoldMessengerState>();
   /// Tính số lần niệm Phật
   int counter = 0;
   int a_di_da_phat = 0;

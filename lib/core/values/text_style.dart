@@ -49,3 +49,18 @@ const styleContentItem = TextStyle(
 const styleCalendarHistory = TextStyle(color: Colors.indigo, fontSize: 16.5);
 
 
+/// Warning
+const styleWarning = TextStyle(
+  color: AppColors.colorTable3,
+  fontSize: 18,
+  fontFamily: "Quicksand",
+  fontWeight: FontWeight.w700,
+);
+
+/// Success
+const styleSuccess = TextStyle(
+  color: AppColors.colorTable4,
+  fontSize: 18,
+  fontFamily: "Quicksand",
+  fontWeight: FontWeight.w700,
+);
